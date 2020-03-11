@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
-contract ProxyDelegate {
-    uint public version; //added version number to top to handle delegatecall changes
+contract ProxyCall {
+    uint public version;
     address public owner;
     address public delegate;  // contract to delegate calls to
 
@@ -13,8 +13,7 @@ contract ProxyDelegate {
     }
 
     function() external {
-        (bool success, bytes memory returnData) = delegate.delegatecall(msg.data);
-        delegate.call(msg.data); //running same command with call to change state in library contract
+        (bool success, bytes memory returnData) = delegate.call(msg.data);
         require(success, "external call failed");
         emit LogResult(returnData);
     }

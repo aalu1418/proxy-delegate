@@ -1,18 +1,18 @@
-const ProxyDelegate = artifacts.require('ProxyDelegate');
+const ProxyCall = artifacts.require('ProxyCall');
 const SomeLibrary = artifacts.require('SomeLibrary');
 const truffleAssert = require('truffle-assertions');
 const ethers = require('ethers');
 const utils = ethers.utils;
 const BN = require('bn.js');
 
-contract("ProxyDelegate", accounts => {
+contract("ProxyCall", accounts => {
     let proxy;
     let lib;
     const coder = new ethers.utils.AbiCoder();
     const owner = accounts[0];
     before(async () => {
         lib = await SomeLibrary.deployed();
-        proxy = await ProxyDelegate.deployed(lib.address, {from: owner});
+        proxy = await ProxyCall.deployed(lib.address, {from: owner});
     });
 
     it("get owner should pass", () => {
@@ -21,7 +21,7 @@ contract("ProxyDelegate", accounts => {
         })
     })
 
-    it("getMsgSender by delegatecall should pass", () => {
+    it("getMsgSender by call should pass", () => {
         // generate the function selector for getMsgSender()
         const data = utils.id("getMsgSender()").slice(0,10);
         return proxy.sendTransaction({from: accounts[1], data })
@@ -29,13 +29,13 @@ contract("ProxyDelegate", accounts => {
                 truffleAssert.eventEmitted(tx, 'LogResult', (ev) => {
                     // perform a case insensitive comparison of the address
                     // for account[1] and the address logged in the event
-                    const regex = new RegExp(accounts[1].slice(2), 'i')
+                    const regex = new RegExp(ProxyCall.address.slice(2), 'i') //changed to contract address because using call
                     return regex.test(ev.result);
                 });
             });
     })
 
-    it("setVersion by delegatecall should pass", async () => {
+    it("setVersion by call should pass", async () => {
         const expectedVersion = 3;
         // generate the function selector for setVersion
         const selector = utils.id("setVersion(uint256)").slice(0,10);
